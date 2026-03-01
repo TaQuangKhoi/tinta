@@ -30,6 +30,17 @@ static App* g_app = nullptr;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void render(App& app);
 
+static void updateWindowTitle(App& app) {
+    std::wstring title = L"Tinta";
+    if (!app.currentFile.empty()) {
+        std::wstring wpath = toWide(app.currentFile);
+        size_t lastSep = wpath.find_last_of(L"\\/");
+        if (lastSep != std::wstring::npos) title = wpath.substr(lastSep + 1) + L" - Tinta";
+        else title = wpath + L" - Tinta";
+    }
+    SetWindowTextW(app.hwnd, title.c_str());
+}
+
 void render(App& app) {
     if (!app.renderTarget) return;
 
@@ -123,7 +134,12 @@ void render(App& app) {
 render_document:
 
     // Clamp scroll values
-    float maxScrollX = std::max(0.0f, app.contentWidth - app.width);
+    float viewportWidth = (float)app.width;
+    if (app.editMode) {
+        float previewX = app.width * app.editorSplitRatio + 3.0f;
+        viewportWidth = std::max(0.0f, (float)app.width - previewX);
+    }
+    float maxScrollX = std::max(0.0f, app.contentWidth - viewportWidth);
     float maxScrollY = std::max(0.0f, app.contentHeight - app.height);
     app.scrollX = std::max(0.0f, std::min(app.scrollX, maxScrollX));
     app.scrollY = std::max(0.0f, std::min(app.scrollY, maxScrollY));
@@ -132,7 +148,7 @@ render_document:
     const float viewportTop = app.scrollY;
     const float viewportBottom = app.scrollY + app.height;
     const float viewportLeft = app.scrollX;
-    const float viewportRight = app.scrollX + app.width;
+    const float viewportRight = app.scrollX + viewportWidth;
     const float cullMargin = 100.0f;
 
     for (const auto& rect : app.layoutRects) {
@@ -203,7 +219,7 @@ render_document:
 
     // Determine scrollbar visibility
     bool needsVScroll = app.contentHeight > app.height;
-    bool needsHScroll = app.contentWidth > app.width;
+    bool needsHScroll = app.contentWidth > viewportWidth;
     float scrollbarSize = 14.0f;
 
     // Scrollbar color: dark on light themes, light on dark themes
@@ -230,8 +246,8 @@ render_document:
 
     // Draw horizontal scrollbar
     if (needsHScroll) {
-        float maxScrollX = std::max(0.0f, app.contentWidth - app.width);
-        float trackWidth = app.width - (needsVScroll ? scrollbarSize : 0);
+        float maxScrollX = std::max(0.0f, app.contentWidth - viewportWidth);
+        float trackWidth = viewportWidth - (needsVScroll ? scrollbarSize : 0);
         float sbWidth = trackWidth / app.contentWidth * trackWidth;
         sbWidth = std::max(sbWidth, 30.0f);
         float sbX = (maxScrollX > 0) ? (app.scrollX / maxScrollX * (trackWidth - sbWidth)) : 0;
@@ -823,6 +839,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow
     }
 
     app.metrics.fileLoadUs = usElapsed(t0);
+    updateWindowTitle(app);
 
     // Start file watch timer and record initial write time
     updateFileWriteTime(app);

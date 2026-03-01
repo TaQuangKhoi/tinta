@@ -531,8 +531,7 @@ void handleMouseUp(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
                             app.searchMatchYs.clear();
                             app.layoutDirty = true;
                             updateFileWriteTime(app);
-                            std::wstring title = item.name + L" - Tinta";
-                            SetWindowTextW(hwnd, title.c_str());
+                            updateWindowTitleForFile(app);
 
                             // Close folder browser after opening file
                             app.showFolderBrowser = false;
@@ -927,12 +926,7 @@ void handleDropFiles(App& app, HWND hwnd, WPARAM wParam) {
                         app.searchMatchYs.clear();
                         app.layoutDirty = true;
                         updateFileWriteTime(app);
-                        std::wstring wpathTitle = toWide(filepath);
-                        size_t lastSep = wpathTitle.find_last_of(L"\\/");
-                        std::wstring title = (lastSep != std::wstring::npos) ?
-                            wpathTitle.substr(lastSep + 1) : wpathTitle;
-                        title += L" - Tinta";
-                        SetWindowTextW(hwnd, title.c_str());
+                        updateWindowTitleForFile(app);
                     }
                 }
                 InvalidateRect(hwnd, nullptr, FALSE);

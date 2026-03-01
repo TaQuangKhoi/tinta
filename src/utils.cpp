@@ -156,6 +156,17 @@ void copyToClipboard(HWND hwnd, const std::wstring& text) {
     CloseClipboard();
 }
 
+void updateWindowTitleForFile(App& app) {
+    std::wstring title = L"Tinta";
+    if (!app.currentFile.empty()) {
+        std::wstring wpath = toWide(app.currentFile);
+        size_t lastSep = wpath.find_last_of(L"\\/");
+        if (lastSep != std::wstring::npos) title = wpath.substr(lastSep + 1) + L" - Tinta";
+        else title = wpath + L" - Tinta";
+    }
+    SetWindowTextW(app.hwnd, title.c_str());
+}
+
 void extractText(const ElementPtr& elem, std::wstring& out) {
     if (!elem) return;
 

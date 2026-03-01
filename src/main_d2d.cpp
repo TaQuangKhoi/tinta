@@ -30,17 +30,6 @@ static App* g_app = nullptr;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void render(App& app);
 
-static void updateWindowTitle(App& app) {
-    std::wstring title = L"Tinta";
-    if (!app.currentFile.empty()) {
-        std::wstring wpath = toWide(app.currentFile);
-        size_t lastSep = wpath.find_last_of(L"\\/");
-        if (lastSep != std::wstring::npos) title = wpath.substr(lastSep + 1) + L" - Tinta";
-        else title = wpath + L" - Tinta";
-    }
-    SetWindowTextW(app.hwnd, title.c_str());
-}
-
 void render(App& app) {
     if (!app.renderTarget) return;
 
@@ -839,7 +828,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow
     }
 
     app.metrics.fileLoadUs = usElapsed(t0);
-    updateWindowTitle(app);
+    updateWindowTitleForFile(app);
 
     // Start file watch timer and record initial write time
     updateFileWriteTime(app);

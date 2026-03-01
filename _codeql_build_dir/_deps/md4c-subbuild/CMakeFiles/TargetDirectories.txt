@@ -1,0 +1,3 @@
+/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/CMakeFiles/md4c-populate.dir
+/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/CMakeFiles/edit_cache.dir
+/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/CMakeFiles/md4c-populate"
+		},
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/CMakeFiles/md4c-populate.rule"
+		},
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/CMakeFiles/md4c-populate-complete.rule"
+		},
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/md4c-populate-prefix/src/md4c-populate-stamp/md4c-populate-build.rule"
+		},
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/md4c-populate-prefix/src/md4c-populate-stamp/md4c-populate-configure.rule"
+		},
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/md4c-populate-prefix/src/md4c-populate-stamp/md4c-populate-download.rule"
+		},
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/md4c-populate-prefix/src/md4c-populate-stamp/md4c-populate-install.rule"
+		},
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/md4c-populate-prefix/src/md4c-populate-stamp/md4c-populate-mkdir.rule"
+		},
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/md4c-populate-prefix/src/md4c-populate-stamp/md4c-populate-patch.rule"
+		},
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/md4c-populate-prefix/src/md4c-populate-stamp/md4c-populate-test.rule"
+		},
+		{
+			"file" : "/home/runner/work/tinta/tinta/_codeql_build_dir/_deps/md4c-subbuild/md4c-populate-prefix/src/md4c-populate-stamp/md4c-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"md4c-populate"
+		],
+		"name" : "md4c-populate"
+	}
+}

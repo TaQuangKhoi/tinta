@@ -20,7 +20,7 @@ static HCURSOR cursorIBeam = LoadCursor(nullptr, IDC_IBEAM);
 
 static float getPreviewPaneOffsetX(const App& app) {
     if (!app.editMode) return 0.0f;
-    return app.width * app.editorSplitRatio + 3.0f;
+    return app.width * app.editorSplitRatio + kEditorSplitHalfGap;
 }
 
 static float getViewportWidth(const App& app) {
@@ -125,8 +125,8 @@ void handleMouseMove(App& app, HWND hwnd, LPARAM lParam) {
         // but we leave the existing code to work with document coordinates
     }
 
-    float localMouseX = (float)app.mouseX - getPreviewPaneOffsetX(app);
-    float docX = localMouseX + app.scrollX;
+    float previewPaneMouseX = (float)app.mouseX - getPreviewPaneOffsetX(app);
+    float docX = previewPaneMouseX + app.scrollX;
     float docY = app.mouseY + app.scrollY;
 
     // Text selection dragging
@@ -193,7 +193,7 @@ void handleMouseMove(App& app, HWND hwnd, LPARAM lParam) {
             sbWidth = std::max(sbWidth, 30.0f);
             float trackWidth = viewportWidth - sbWidth;
 
-            float deltaX = localMouseX - app.hScrollbarDragStartX;
+            float deltaX = previewPaneMouseX - app.hScrollbarDragStartX;
             float scrollDelta = (deltaX / trackWidth) * maxScroll;
             app.scrollX = app.hScrollbarDragStartScroll + scrollDelta;
             app.scrollX = std::max(0.0f, std::min(app.scrollX, maxScroll));
@@ -208,7 +208,7 @@ void handleMouseMove(App& app, HWND hwnd, LPARAM lParam) {
     app.scrollbarHovered = false;
     if (app.contentHeight > app.height) {
         float sbWidth = 14.0f;  // hit area
-        if (localMouseX >= getViewportWidth(app) - sbWidth) {
+        if (previewPaneMouseX >= getViewportWidth(app) - sbWidth) {
             app.scrollbarHovered = true;
         }
     }
@@ -303,8 +303,8 @@ void handleMouseDown(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
     app.mouseX = GET_X_LPARAM(lParam);
     app.mouseY = GET_Y_LPARAM(lParam);
     SetCapture(hwnd);
-    float localMouseX = (float)app.mouseX - getPreviewPaneOffsetX(app);
-    float docX = localMouseX + app.scrollX;
+    float previewPaneMouseX = (float)app.mouseX - getPreviewPaneOffsetX(app);
+    float docX = previewPaneMouseX + app.scrollX;
     float docY = app.mouseY + app.scrollY;
 
     // Check if clicking vertical scrollbar
@@ -334,7 +334,7 @@ void handleMouseDown(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
     // Check if clicking horizontal scrollbar
     else if (app.hScrollbarHovered && app.contentWidth > getViewportWidth(app)) {
         app.hScrollbarDragging = true;
-        app.hScrollbarDragStartX = localMouseX;
+        app.hScrollbarDragStartX = previewPaneMouseX;
         app.hScrollbarDragStartScroll = app.scrollX;
 
         // Check if clicking in track (not thumb) - jump to position
@@ -345,14 +345,14 @@ void handleMouseDown(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
         float sbX = (maxScroll > 0) ? (app.scrollX / maxScroll * (viewportWidth - sbWidth)) : 0;
 
         // If clicked outside thumb, jump
-        if (localMouseX < sbX || localMouseX > sbX + sbWidth) {
+        if (previewPaneMouseX < sbX || previewPaneMouseX > sbX + sbWidth) {
             float trackWidth = viewportWidth - sbWidth;
-            float clickPos = localMouseX - sbWidth / 2;
+            float clickPos = previewPaneMouseX - sbWidth / 2;
             clickPos = std::max(0.0f, std::min(clickPos, trackWidth));
             app.scrollX = (clickPos / trackWidth) * maxScroll;
             app.targetScrollX = app.scrollX;
             app.hScrollbarDragStartScroll = app.scrollX;
-            app.hScrollbarDragStartX = localMouseX;
+            app.hScrollbarDragStartX = previewPaneMouseX;
         }
         InvalidateRect(hwnd, nullptr, FALSE);
     } else {
@@ -613,8 +613,8 @@ void handleMouseUp(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
             // hasSelection was already set to true in WM_LBUTTONDOWN
         } else {
             // Normal selection: finalize with current mouse position (document coordinates)
-            float localMouseX = (float)app.mouseX - getPreviewPaneOffsetX(app);
-            float docX = localMouseX + app.scrollX;
+            float previewPaneMouseX = (float)app.mouseX - getPreviewPaneOffsetX(app);
+            float docX = previewPaneMouseX + app.scrollX;
             float docY = app.mouseY + app.scrollY;
             app.selEndX = (int)docX;
             app.selEndY = (int)docY;

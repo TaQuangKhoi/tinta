@@ -21,6 +21,9 @@
 
 using namespace qmd;
 
+constexpr float kEditorSplitGap = 6.0f;
+constexpr float kEditorSplitHalfGap = kEditorSplitGap / 2.0f;
+
 // Timing helpers
 using Clock = std::chrono::high_resolution_clock;
 inline int64_t usElapsed(Clock::time_point start) {

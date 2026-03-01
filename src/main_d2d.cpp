@@ -88,8 +88,8 @@ void render(App& app) {
     if (app.editMode) {
         app.renderTarget->Clear(app.theme.background);
 
-        float editorWidth = app.width * app.editorSplitRatio - 3;
-        float previewX = app.width * app.editorSplitRatio + 3;
+        float editorWidth = app.width * app.editorSplitRatio - kEditorSplitHalfGap;
+        float previewX = app.width * app.editorSplitRatio + kEditorSplitHalfGap;
         float previewWidth = app.width - previewX;
 
         // Render editor (left pane)
@@ -125,7 +125,7 @@ render_document:
     // Clamp scroll values
     float viewportWidth = (float)app.width;
     if (app.editMode) {
-        float previewX = app.width * app.editorSplitRatio + 3.0f;
+        float previewX = app.width * app.editorSplitRatio + kEditorSplitHalfGap;
         viewportWidth = std::max(0.0f, (float)app.width - previewX);
     }
     float maxScrollX = std::max(0.0f, app.contentWidth - viewportWidth);

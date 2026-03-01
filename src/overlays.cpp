@@ -20,7 +20,7 @@ void renderSearchOverlay(App& app) {
     float barCenterWidth = (float)app.width;
     if (app.editMode) {
         // Center over editor pane (left side)
-        float paneWidth = app.width * app.editorSplitRatio - 3;
+        float paneWidth = app.width * app.editorSplitRatio - kEditorSplitHalfGap;
         barWidth = std::min(barWidth, paneWidth - 40.0f);
         barCenterWidth = paneWidth;
     }

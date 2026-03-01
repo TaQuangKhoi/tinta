@@ -949,7 +949,7 @@ static size_t editorPosFromClick(const App& app, int x, int y) {
 }
 
 void handleEditorMouseDown(App& app, HWND hwnd, int x, int y) {
-    float editorWidth = app.width * app.editorSplitRatio - 3;
+    float editorWidth = app.width * app.editorSplitRatio - kEditorSplitHalfGap;
 
     // Check for separator
     float sepX = app.width * app.editorSplitRatio;
@@ -1041,7 +1041,7 @@ void handleEditorMouseUp(App& app, HWND hwnd, int x, int y) {
 }
 
 void handleEditorMouseMove(App& app, HWND hwnd, int x, int y) {
-    float editorWidth = app.width * app.editorSplitRatio - 3;
+    float editorWidth = app.width * app.editorSplitRatio - kEditorSplitHalfGap;
 
     if (app.draggingSeparator) {
         float dx = (float)x - app.separatorDragStartX;

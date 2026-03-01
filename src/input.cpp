@@ -18,6 +18,16 @@ static HCURSOR cursorArrow = LoadCursor(nullptr, IDC_ARROW);
 static HCURSOR cursorHand  = LoadCursor(nullptr, IDC_HAND);
 static HCURSOR cursorIBeam = LoadCursor(nullptr, IDC_IBEAM);
 
+static float getPreviewPaneOffsetX(const App& app) {
+    if (!app.editMode) return 0.0f;
+    return app.width * app.editorSplitRatio + kEditorSplitHalfGap;
+}
+
+static float getViewportWidth(const App& app) {
+    float offsetX = getPreviewPaneOffsetX(app);
+    return std::max(0.0f, (float)app.width - offsetX);
+}
+
 void handleMouseWheel(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
     bool ctrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
     float delta = (float)GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
@@ -94,7 +104,7 @@ void handleMouseHWheel(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
     float delta = (float)GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA * 60.0f;
     app.targetScrollX += delta;
 
-    float maxScrollX = std::max(0.0f, app.contentWidth - app.width);
+    float maxScrollX = std::max(0.0f, app.contentWidth - getViewportWidth(app));
     app.targetScrollX = std::max(0.0f, std::min(app.targetScrollX, maxScrollX));
     app.scrollX = app.targetScrollX;
 
@@ -115,7 +125,8 @@ void handleMouseMove(App& app, HWND hwnd, LPARAM lParam) {
         // but we leave the existing code to work with document coordinates
     }
 
-    float docX = app.mouseX + app.scrollX;
+    float previewPaneMouseX = (float)app.mouseX - getPreviewPaneOffsetX(app);
+    float docX = previewPaneMouseX + app.scrollX;
     float docY = app.mouseY + app.scrollY;
 
     // Text selection dragging
@@ -175,13 +186,14 @@ void handleMouseMove(App& app, HWND hwnd, LPARAM lParam) {
 
     // Horizontal scrollbar dragging
     if (app.hScrollbarDragging) {
-        float maxScroll = std::max(0.0f, app.contentWidth - app.width);
-        if (maxScroll > 0 && app.contentWidth > app.width) {
-            float sbWidth = (float)app.width / app.contentWidth * app.width;
+        float viewportWidth = getViewportWidth(app);
+        float maxScroll = std::max(0.0f, app.contentWidth - viewportWidth);
+        if (maxScroll > 0 && app.contentWidth > viewportWidth) {
+            float sbWidth = viewportWidth / app.contentWidth * viewportWidth;
             sbWidth = std::max(sbWidth, 30.0f);
-            float trackWidth = app.width - sbWidth;
+            float trackWidth = viewportWidth - sbWidth;
 
-            float deltaX = (float)app.mouseX - app.hScrollbarDragStartX;
+            float deltaX = previewPaneMouseX - app.hScrollbarDragStartX;
             float scrollDelta = (deltaX / trackWidth) * maxScroll;
             app.scrollX = app.hScrollbarDragStartScroll + scrollDelta;
             app.scrollX = std::max(0.0f, std::min(app.scrollX, maxScroll));
@@ -196,7 +208,7 @@ void handleMouseMove(App& app, HWND hwnd, LPARAM lParam) {
     app.scrollbarHovered = false;
     if (app.contentHeight > app.height) {
         float sbWidth = 14.0f;  // hit area
-        if (app.mouseX >= app.width - sbWidth) {
+        if (previewPaneMouseX >= getViewportWidth(app) - sbWidth) {
             app.scrollbarHovered = true;
         }
     }
@@ -204,7 +216,7 @@ void handleMouseMove(App& app, HWND hwnd, LPARAM lParam) {
     // Check horizontal scrollbar hover
     bool wasHHovered = app.hScrollbarHovered;
     app.hScrollbarHovered = false;
-    if (app.contentWidth > app.width) {
+    if (app.contentWidth > getViewportWidth(app)) {
         float sbHeight = 14.0f;  // hit area
         if (app.mouseY >= app.height - sbHeight) {
             app.hScrollbarHovered = true;
@@ -291,7 +303,8 @@ void handleMouseDown(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
     app.mouseX = GET_X_LPARAM(lParam);
     app.mouseY = GET_Y_LPARAM(lParam);
     SetCapture(hwnd);
-    float docX = app.mouseX + app.scrollX;
+    float previewPaneMouseX = (float)app.mouseX - getPreviewPaneOffsetX(app);
+    float docX = previewPaneMouseX + app.scrollX;
     float docY = app.mouseY + app.scrollY;
 
     // Check if clicking vertical scrollbar
@@ -319,26 +332,27 @@ void handleMouseDown(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
         InvalidateRect(hwnd, nullptr, FALSE);
     }
     // Check if clicking horizontal scrollbar
-    else if (app.hScrollbarHovered && app.contentWidth > app.width) {
+    else if (app.hScrollbarHovered && app.contentWidth > getViewportWidth(app)) {
         app.hScrollbarDragging = true;
-        app.hScrollbarDragStartX = (float)app.mouseX;
+        app.hScrollbarDragStartX = previewPaneMouseX;
         app.hScrollbarDragStartScroll = app.scrollX;
 
         // Check if clicking in track (not thumb) - jump to position
-        float maxScroll = std::max(0.0f, app.contentWidth - app.width);
-        float sbWidth = (float)app.width / app.contentWidth * app.width;
+        float viewportWidth = getViewportWidth(app);
+        float maxScroll = std::max(0.0f, app.contentWidth - viewportWidth);
+        float sbWidth = viewportWidth / app.contentWidth * viewportWidth;
         sbWidth = std::max(sbWidth, 30.0f);
-        float sbX = (maxScroll > 0) ? (app.scrollX / maxScroll * (app.width - sbWidth)) : 0;
+        float sbX = (maxScroll > 0) ? (app.scrollX / maxScroll * (viewportWidth - sbWidth)) : 0;
 
         // If clicked outside thumb, jump
-        if (app.mouseX < sbX || app.mouseX > sbX + sbWidth) {
-            float trackWidth = app.width - sbWidth;
-            float clickPos = (float)app.mouseX - sbWidth / 2;
+        if (previewPaneMouseX < sbX || previewPaneMouseX > sbX + sbWidth) {
+            float trackWidth = viewportWidth - sbWidth;
+            float clickPos = previewPaneMouseX - sbWidth / 2;
             clickPos = std::max(0.0f, std::min(clickPos, trackWidth));
             app.scrollX = (clickPos / trackWidth) * maxScroll;
             app.targetScrollX = app.scrollX;
             app.hScrollbarDragStartScroll = app.scrollX;
-            app.hScrollbarDragStartX = (float)app.mouseX;
+            app.hScrollbarDragStartX = previewPaneMouseX;
         }
         InvalidateRect(hwnd, nullptr, FALSE);
     } else {
@@ -517,6 +531,7 @@ void handleMouseUp(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
                             app.searchMatchYs.clear();
                             app.layoutDirty = true;
                             updateFileWriteTime(app);
+                            updateWindowTitleForFile(app);
 
                             // Close folder browser after opening file
                             app.showFolderBrowser = false;
@@ -598,7 +613,8 @@ void handleMouseUp(App& app, HWND hwnd, WPARAM wParam, LPARAM lParam) {
             // hasSelection was already set to true in WM_LBUTTONDOWN
         } else {
             // Normal selection: finalize with current mouse position (document coordinates)
-            float docX = app.mouseX + app.scrollX;
+            float previewPaneMouseX = (float)app.mouseX - getPreviewPaneOffsetX(app);
+            float docX = previewPaneMouseX + app.scrollX;
             float docY = app.mouseY + app.scrollY;
             app.selEndX = (int)docX;
             app.selEndY = (int)docY;
@@ -910,6 +926,7 @@ void handleDropFiles(App& app, HWND hwnd, WPARAM wParam) {
                         app.searchMatchYs.clear();
                         app.layoutDirty = true;
                         updateFileWriteTime(app);
+                        updateWindowTitleForFile(app);
                     }
                 }
                 InvalidateRect(hwnd, nullptr, FALSE);

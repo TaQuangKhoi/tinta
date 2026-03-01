@@ -1108,7 +1108,7 @@ void layoutDocument(App& app) {
     // In edit mode, use preview pane width instead of full window
     float layoutWidth = app.width;
     if (app.editMode) {
-        layoutWidth = app.width * (1.0f - app.editorSplitRatio) - 6;
+        layoutWidth = app.width * (1.0f - app.editorSplitRatio) - kEditorSplitGap;
     }
     float maxWidth = layoutWidth - indent * 2;
 

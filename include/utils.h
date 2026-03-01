@@ -29,6 +29,7 @@ void findLineRects(const App& app, float y, float& lineLeft, float& lineRight,
 
 void openUrl(const std::string& url);
 void copyToClipboard(HWND hwnd, const std::wstring& text);
+void updateWindowTitleForFile(App& app);
 void extractText(const ElementPtr& elem, std::wstring& out);
 
 #endif // TINTA_UTILS_H

@@ -10,7 +10,14 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: build/Release/tinta.exe
+          - os: ubuntu-latest
+            artifact: build/tinta
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
@@ -36,17 +43,17 @@ jobs:
 
             **Markdown, distilled.**
 
-            A fast, lightweight markdown reader for Windows.
+            A fast, lightweight markdown reader.
 
             ### Installation
-            1. Download `tinta.exe` below
-            2. Run it (you may need to click "More info" → "Run anyway" on SmartScreen)
+            1. Download the binary for your platform below
+            2. On Windows, run it (you may need to click "More info" → "Run anyway" on SmartScreen)
             3. Optionally run `tinta.exe /register` to set as default .md viewer
 
             ### What's included
             - 10 beautiful themes (5 light, 5 dark)
             - Hardware-accelerated rendering via Direct2D
-            - ~270KB single executable, no dependencies
-          files: build/Release/tinta.exe
+            - Small single executable, no dependencies
+          files: ${{ matrix.artifact }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

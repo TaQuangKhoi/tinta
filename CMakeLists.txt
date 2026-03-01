@@ -17,31 +17,39 @@ if(MSVC)
 endif()
 
 # MD4C markdown parser
-include(FetchContent)
-FetchContent_Declare(
-    md4c
-    GIT_REPOSITORY https://github.com/mity/md4c.git
-    GIT_TAG release-0.5.2
-    GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(md4c)
+if(WIN32)
+    include(FetchContent)
+    FetchContent_Declare(
+        md4c
+        GIT_REPOSITORY https://github.com/mity/md4c.git
+        GIT_TAG release-0.5.2
+        GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(md4c)
+endif()
 
 # Source files
-set(SOURCES
-    src/main_d2d.cpp
-    src/markdown.cpp
-    src/themes.cpp
-    src/settings.cpp
-    src/d2d_init.cpp
-    src/syntax.cpp
-    src/utils.cpp
-    src/search.cpp
-    src/render.cpp
-    src/file_utils.cpp
-    src/overlays.cpp
-    src/input.cpp
-    src/editor.cpp
-)
+if(WIN32)
+    set(SOURCES
+        src/main_d2d.cpp
+        src/markdown.cpp
+        src/themes.cpp
+        src/settings.cpp
+        src/d2d_init.cpp
+        src/syntax.cpp
+        src/utils.cpp
+        src/search.cpp
+        src/render.cpp
+        src/file_utils.cpp
+        src/overlays.cpp
+        src/input.cpp
+        src/editor.cpp
+    )
+elseif(UNIX AND NOT APPLE)
+    set(SOURCES src/main_linux.cpp)
+else()
+    message(FATAL_ERROR "Unsupported platform")
+endif()
 
 set(HEADERS
     include/markdown.h
@@ -59,30 +67,28 @@ set(HEADERS
     include/editor.h
 )
 
-# Windows resource file (icon)
-set(RESOURCES
-    resources/tinta.rc
-)
-
 # Main executable
-add_executable(tinta WIN32 ${SOURCES} ${HEADERS} ${RESOURCES})
+if(WIN32)
+    add_executable(tinta WIN32 ${SOURCES} ${HEADERS} resources/tinta.rc)
+else()
+    add_executable(tinta ${SOURCES} ${HEADERS})
+endif()
 
-target_include_directories(tinta PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${md4c_SOURCE_DIR}/src
-)
+target_include_directories(tinta PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(tinta PRIVATE
-    md4c
-    d2d1
-    dwrite
-    shell32
-    windowscodecs
-    urlmon
-    ole32
-)
-
-target_compile_definitions(tinta PRIVATE UNICODE _UNICODE)
+if(WIN32)
+    target_include_directories(tinta PRIVATE ${md4c_SOURCE_DIR}/src)
+    target_link_libraries(tinta PRIVATE md4c)
+    target_link_libraries(tinta PRIVATE
+        d2d1
+        dwrite
+        shell32
+        windowscodecs
+        urlmon
+        ole32
+    )
+    target_compile_definitions(tinta PRIVATE UNICODE _UNICODE)
+endif()
 
 # Install
 install(TARGETS tinta RUNTIME DESTINATION bin)
